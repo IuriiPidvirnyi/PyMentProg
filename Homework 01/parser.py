@@ -13,11 +13,12 @@ print("\nScript name (path): %s" % str(sys.argv[0]))
 json_path = args.json_path
 ndays = args.ndays
 
-print ("Path to JSON file: %s" % json_path)
-print ("Days to be retrieved in one direction: %i" % ndays)
+print("Path to JSON file: %s" % json_path)
+print("Days to be retrieved in one direction: %i" % ndays)
 
 entered_date = input("\nPlease, enter a date('YYYY-MM-DD'): ")
 user_date = datetime.strptime(entered_date, '%Y-%m-%d').date()
+
 
 def befdates(user_date, ndays):
     bef_user_date = []
@@ -34,13 +35,9 @@ def aftdates(user_date, ndays):
         ndays -= 1
     return list(reversed(aft_user_date))
 
-# print(befdates(user_date, ndays))
-# print(aftdates(user_date, ndays))
 
 with open(json_path, "r") as f:
     fd = json.load(f)
-
-# 2013-12-10
 
 print('\nDATE_FROM', fd['DATE_FROM'])
 print('DATE_TO', fd['DATE_TO'])
@@ -56,14 +53,14 @@ for i in befdates(user_date, ndays):
             bhh += n['HH']
         else:
             continue
-    print(i, bhh)
+    print(i + ':', bhh)
 
 for n in fd['ITEMS']:
     if str(user_date) == n['IMPRESSION_DATE']:
         uhh += n['HH']
     else:
         continue
-print(str(user_date), uhh)
+print(str(user_date) + ':', uhh)
 
 for i in aftdates(user_date, ndays):
     for n in fd['ITEMS']:
@@ -71,4 +68,4 @@ for i in aftdates(user_date, ndays):
             ahh += n['HH']
         else:
             continue
-    print(i, ahh)
+    print(i + ':', ahh)
