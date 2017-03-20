@@ -4,69 +4,71 @@ import sys
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('PATH_TO_JSON', help='Enter appropriate path to JSON file', type=str)
+parser.add_argument('json_path', help='Enter appropriate path to JSON file', type=str)
+parser.add_argument('ndays', help='Enter amount of days to be retrieved', type=int)
 args = parser.parse_args()
 
 print("\nScript name (path): %s" % str(sys.argv[0]))
 
-json_path = args.PATH_TO_JSON
+json_path = args.json_path
+ndays = args.ndays
 
-print ("\nPath to JSON file: %s" % json_path)
+print ("Path to JSON file: %s" % json_path)
+print ("Days to be retrieved in one direction: %i" % ndays)
+
+entered_date = input("\nPlease, enter a date('YYYY-MM-DD'): ")
+user_date = datetime.strptime(entered_date, '%Y-%m-%d').date()
+
+def befdates(user_date, ndays):
+    bef_user_date = []
+    while ndays > 0:
+        bef_user_date.append(str(user_date - timedelta(days=ndays)))
+        ndays -= 1
+    return bef_user_date
+
+
+def aftdates(user_date, ndays):
+    aft_user_date = []
+    while ndays > 0:
+        aft_user_date.append(str(user_date + timedelta(days=ndays)))
+        ndays -= 1
+    return list(reversed(aft_user_date))
+
+# print(befdates(user_date, ndays))
+# print(aftdates(user_date, ndays))
 
 with open(json_path, "r") as f:
     fd = json.load(f)
-    for i in fd:
-        if i == "DATE_FROM":
-            print("\n" + i + ":", fd[i])
-    for i in fd:
-        if i == "DATE_TO":
-            print(i + ":", fd[i])
-    for i in fd:
-        if i == "STATION":
-            for j in fd[i]:
-                # print(j)
-                if j == "STATION_CALL_LETTERS":
-                    print(j + ":", fd[i][j])
-            for j in fd[i]:
-                if j == "STATION_NAME":
-                    print(j + ":", fd[i][j])
 
-    ud = USER_DATE = input("\nPlease, enter a date('YYYY-MM-DD'): ")
-    # USER_DATE = "2016-02-28"
-    def usrdate(ud):
-        user_date = datetime.strptime(ud, '%Y-%m-%d').date()
-        bef_user_date = user_date - timedelta(days=1)
-        aft_user_date = user_date + timedelta(days=1)
-        return bef_user_date, user_date, aft_user_date
-    print("A day before entered date: " + str(usrdate(ud)[0]))
-    print("A day after entered date: " + str(usrdate(ud)[2]) + "\n")
+# 2013-12-10
 
-    bhh = []
-    uhh = []
-    ahh = []
+print('\nDATE_FROM', fd['DATE_FROM'])
+print('DATE_TO', fd['DATE_TO'])
+print('STATION_CALL_LETTERS', fd['STATION']['STATION_CALL_LETTERS'])
+print('STATION_NAME', fd['STATION']['STATION_NAME'], '\n')
 
-    for i in fd:
-        if i == "IMPRESSION_DATE":
-            print(i)
+bhh = 0
+uhh = 0
+ahh = 0
+for i in befdates(user_date, ndays):
+    for n in fd['ITEMS']:
+        if i == n['IMPRESSION_DATE']:
+            bhh += n['HH']
         else:
-            for j in fd[i]:
-                # print(j)
-                if j == "IMPRESSION_DATE":
-                    print(j)
-                else:
-                    for n in j:
-                        if n == "HH" and j["IMPRESSION_DATE"] == str(usrdate(ud)[0]):
-                            bhh.append(j[n])
-                        elif n == "HH" and j["IMPRESSION_DATE"] == str(usrdate(ud)[1]):
-                            uhh.append(j[n])
-                        elif n == "HH" and j["IMPRESSION_DATE"] == str(usrdate(ud)[2]):
-                            ahh.append(j[n])
+            continue
+    print(i, bhh)
 
-    print(str(usrdate(ud)[0]) + ':', sum(bhh))
-    print(str(usrdate(ud)[1]) + ':', sum(uhh))
-    print(str(usrdate(ud)[2]) + ':', sum(ahh))
+for n in fd['ITEMS']:
+    if str(user_date) == n['IMPRESSION_DATE']:
+        uhh += n['HH']
+    else:
+        continue
+print(str(user_date), uhh)
 
-
-
-
-
+for i in aftdates(user_date, ndays):
+    for n in fd['ITEMS']:
+        if i == n['IMPRESSION_DATE']:
+            ahh += n['HH']
+        else:
+            continue
+    print(i, ahh)
